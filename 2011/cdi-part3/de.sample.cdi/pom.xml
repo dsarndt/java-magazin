@@ -1,0 +1,188 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>javamagazin-examples</groupId>
+	<artifactId>de.samples.cdi</artifactId>
+	<version>1.0.0</version>
+	<packaging>jar</packaging>
+
+	<name>de.samples</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<version.arquillian>1.0.0.Alpha5</version.arquillian>
+		<version.junit>4.8.1</version.junit>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.jboss.arquillian</groupId>
+			<artifactId>arquillian-junit</artifactId>
+			<version>${version.arquillian}</version>
+			<scope>test</scope>
+		</dependency>
+     <dependency>
+       <groupId>org.jboss.shrinkwrap</groupId>
+       <artifactId>shrinkwrap-api</artifactId>
+       <version>1.0.0-alpha-12</version>
+     </dependency>
+     <dependency>
+       <groupId>org.jboss.shrinkwrap</groupId>
+       <artifactId>shrinkwrap-impl-base</artifactId>
+       <scope>test</scope>
+       <version>1.0.0-alpha-12</version>
+     </dependency>	
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${version.junit}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.spec</groupId>
+			<artifactId>jboss-javaee-6.0</artifactId>
+			<version>1.0.0.Final</version>
+			<type>pom</type>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency>
+
+	</dependencies>
+
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>jbossas-embedded-6</id>
+
+			<properties>
+				<version.org.jboss.jbossas>6.0.0.Final</version.org.jboss.jbossas>
+				<jboss.home>${project.build.directory}/jboss-${version.org.jboss.jbossas}</jboss.home>
+			</properties>
+
+
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.jboss.jbossas</groupId>
+						<artifactId>jboss-as-depchain</artifactId>
+						<version>${version.org.jboss.jbossas}</version>
+						<type>pom</type>
+						<scope>import</scope>
+					</dependency>
+				</dependencies>
+
+			</dependencyManagement>
+
+			<dependencies>
+				<dependency>
+					<groupId>org.jboss.arquillian.container</groupId>
+					<artifactId>arquillian-jbossas-embedded-6</artifactId>
+					<version>${version.arquillian}</version>
+				</dependency>
+
+				<dependency>
+					<groupId>org.jboss.jbossas</groupId>
+					<artifactId>jboss-as-depchain</artifactId>
+					<version>${version.org.jboss.jbossas}</version>
+					<type>pom</type>
+					<scope>compile</scope>
+				</dependency>
+			</dependencies>
+
+			<build>
+
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>unpack</id>
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>org.jboss.jbossas</groupId>
+											<artifactId>jboss-as-distribution</artifactId>
+											<version>${version.org.jboss.jbossas}</version>
+											<type>zip</type>
+											<overWrite>false</overWrite>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.6</version>
+						<configuration>
+							<additionalClasspathElements>
+								<additionalClasspathElement>${jboss.home}/client/jbossws-native-client.jar</additionalClasspathElement>
+								<additionalClasspathElement>${jboss.home}/server/default/deploy/jbossweb.sar</additionalClasspathElement>
+							</additionalClasspathElements>
+							<trimStackTrace>false</trimStackTrace>
+							<printSummary>true</printSummary>
+							<argLine>-Xmx512m -XX:MaxPermSize=256m -Djava.net.preferIPv4Stack=true -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Djava.endorsed.dirs=${jboss.home}/lib/endorsed -Djboss.home=${jboss.home} -Djboss.boot.server.log.dir=${jboss.home} -Dorg.jboss.reflect.spi.TypeInfoFactory=org.jboss.reflect.plugins.introspection.IntrospectionTypeInfoFactory</argLine>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+
+	</profiles>
+
+
+	<repositories>
+		<repository>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Maven Repository Group</name>
+			<url>https://repository.jboss.org/nexus/content/repositories/public</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Maven Repository Group</name>
+			<url>https://repository.jboss.org/nexus/content/repositories/releases/</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+</project>

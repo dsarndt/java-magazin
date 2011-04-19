@@ -1,0 +1,11 @@
+.metadata
+.classpath
+.project
+.settings
+
+target/
+
+.DS_Store
+
+
+*.log
